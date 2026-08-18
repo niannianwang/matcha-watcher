@@ -76,15 +76,21 @@ def notify(title: str, message: str, url: str) -> None:
     if not NTFY_TOPIC:
         print(f"[NOTIFY - no NTFY_TOPIC set] {title}: {message}")
         return
+    # Use ntfy's JSON publish API (not custom HTTP headers) so emoji/UTF-8
+    # in the title/message don't break header encoding (headers are
+    # latin-1 only; JSON body is UTF-8 safe).
+    payload = json.dumps({
+        "topic": NTFY_TOPIC,
+        "title": title,
+        "message": message,
+        "priority": "urgent",
+        "tags": ["tea", "rotating_light"],
+        "click": url,
+    }).encode("utf-8")
     req = urllib.request.Request(
-        f"https://ntfy.sh/{NTFY_TOPIC}",
-        data=message.encode("utf-8"),
-        headers={
-            "Title": title,
-            "Priority": "urgent",
-            "Tags": "tea,rotating_light",
-            "Click": url,
-        },
+        "https://ntfy.sh/",
+        data=payload,
+        headers={"Content-Type": "application/json"},
         method="POST",
     )
     try:
@@ -123,20 +129,26 @@ def main() -> None:
     save_state(new_state)
 
     if changes:
-        if len(changes) == 1:
-            name, url = changes[0]
-            notify(
-                f"🍵 {name} is back in stock!",
-                f"{name} just restocked on Marukyu Koyamaen. Go go go!",
-                url,
-            )
-        else:
-            names = ", ".join(n for n, _ in changes)
-            notify(
-                f"🍵 {len(changes)} matcha products restocked!",
-                f"Back in stock: {names}",
-                "https://www.marukyu-koyamaen.co.jp/english/shop/products/catalog/matcha/principal",
-            )
+        try:
+            if len(changes) == 1:
+                name, url = changes[0]
+                notify(
+                    f"🍵 {name} is back in stock!",
+                    f"{name} just restocked on Marukyu Koyamaen. Go go go!",
+                    url,
+                )
+            else:
+                names = ", ".join(n for n, _ in changes)
+                notify(
+                    f"🍵 {len(changes)} matcha products restocked!",
+                    f"Back in stock: {names}",
+                    "https://www.marukyu-koyamaen.co.jp/english/shop/products/catalog/matcha/principal",
+                )
+        except Exception as e:
+            # Never let a notification failure crash the run - state is
+            # already saved above, and we'd rather log the error than
+            # silently get stuck re-trying (and failing) every 5 minutes.
+            print(f"Notification error (state was still saved): {e}")
     else:
         print("No changes since last check.")
 
