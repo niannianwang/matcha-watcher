@@ -4,11 +4,11 @@
     "checked_at": 1787025821
   },
   "Unkaku": {
-    "in_stock": true,
+    "in_stock": false,
     "checked_at": 1787025822
   },
   "Wako": {
-    "in_stock": true,
+    "in_stock": false,
     "checked_at": 1787025824
   },
   "Tenju": {
@@ -20,7 +20,7 @@
     "checked_at": 1787025827
   },
   "Eiju": {
-    "in_stock": true,
+    "in_stock": false,
     "checked_at": 1787025829
   },
   "Kinrin": {
@@ -28,19 +28,19 @@
     "checked_at": 1787025831
   },
   "Yugen": {
-    "in_stock": true,
+    "in_stock": false,
     "checked_at": 1787025832
   },
   "Chigi no Shiro": {
-    "in_stock": true,
+    "in_stock": false,
     "checked_at": 1787025833
   },
   "Isuzu": {
-    "in_stock": true,
+    "in_stock": false,
     "checked_at": 1787025835
   },
   "Aoarashi": {
-    "in_stock": true,
+    "in_stock": false,
     "checked_at": 1787025836
   }
 }
