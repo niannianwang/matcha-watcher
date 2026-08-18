@@ -76,11 +76,12 @@ def notify(title: str, message: str, url: str) -> None:
     if not NTFY_TOPIC:
         print(f"[NOTIFY - no NTFY_TOPIC set] {title}: {message}")
         return
+    safe_title = title.encode("latin-1", errors="ignore").decode("latin-1").strip()
     req = urllib.request.Request(
         f"https://ntfy.sh/{NTFY_TOPIC}",
         data=message.encode("utf-8"),
         headers={
-            "Title": title,
+            "Title": safe_title or "Stock update",
             "Priority": "urgent",
             "Tags": "tea,rotating_light",
             "Click": url,
