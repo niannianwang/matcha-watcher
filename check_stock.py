@@ -83,7 +83,7 @@ def notify(title: str, message: str, url: str) -> None:
         "topic": NTFY_TOPIC,
         "title": title,
         "message": message,
-        "priority": "max",
+        "priority": 5,
         "tags": ["tea", "rotating_light"],
         "click": url,
     }).encode("utf-8")
