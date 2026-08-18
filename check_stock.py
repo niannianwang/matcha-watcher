@@ -96,6 +96,9 @@ def notify(title: str, message: str, url: str) -> None:
     try:
         urllib.request.urlopen(req, timeout=15)
         print(f"Notification sent: {title}")
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", errors="ignore")
+        print(f"Failed to send notification: HTTP {e.code} - {body}")
     except urllib.error.URLError as e:
         print(f"Failed to send notification: {e}")
 
