@@ -1,46 +1,43 @@
 {
-  "Kiwami Choan": {
-    "in_stock": false,
-    "checked_at": 1790819904
-  },
+  "Kiwami Choan": false,
   "Unkaku": {
-    "in_stock": false,
-    "checked_at": 1790819906
+    "in_stock": true,
+    "checked_at": 1790843888
   },
   "Wako": {
     "in_stock": false,
-    "checked_at": 1790819908
+    "checked_at": 1790843889
   },
   "Tenju": {
-    "in_stock": false,
-    "checked_at": 1790819909
+    "in_stock": true,
+    "checked_at": 1790843890
   },
   "Choan": {
     "in_stock": false,
-    "checked_at": 1790819911
+    "checked_at": 1790843891
   },
   "Eiju": {
-    "in_stock": false,
-    "checked_at": 1790819913
+    "in_stock": true,
+    "checked_at": 1790843893
   },
   "Kinrin": {
     "in_stock": false,
-    "checked_at": 1790819914
+    "checked_at": 1790843894
   },
   "Yugen": {
     "in_stock": false,
-    "checked_at": 1790819915
+    "checked_at": 1790843895
   },
   "Chigi no Shiro": {
     "in_stock": false,
-    "checked_at": 1790819917
+    "checked_at": 1790843897
   },
   "Isuzu": {
     "in_stock": false,
-    "checked_at": 1790819918
+    "checked_at": 1790843898
   },
   "Aoarashi": {
     "in_stock": false,
-    "checked_at": 1790819920
+    "checked_at": 1790843899
   }
 }
