@@ -61,11 +61,20 @@ def is_in_stock(html: str) -> bool:
 
 
 def load_state() -> dict:
-    if os.path.exists(STATE_FILE):
+    if not os.path.exists(STATE_FILE):
+        return {}
+    try:
         with open(STATE_FILE, "r") as f:
-            return json.load(f)
-    return {}
-
+            raw = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return {}
+    if not isinstance(raw, dict):
+        return {}
+    # Older runs could save a bare bool, so convert those to the dict shape.
+    return {
+        name: v if isinstance(v, dict) else {"in_stock": bool(v), "checked_at": 0}
+        for name, v in raw.items()
+    }
 
 def save_state(state: dict) -> None:
     with open(STATE_FILE, "w") as f:
@@ -83,7 +92,7 @@ def notify(title: str, message: str, url: str) -> None:
         "topic": NTFY_TOPIC,
         "title": title,
         "message": message,
-        "priority": "max",
+        "priority": 5,
         "tags": ["tea", "rotating_light"],
         "click": url,
     }).encode("utf-8")
@@ -96,6 +105,9 @@ def notify(title: str, message: str, url: str) -> None:
     try:
         urllib.request.urlopen(req, timeout=15)
         print(f"Notification sent: {title}")
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", errors="ignore")
+        print(f"Failed to send notification: HTTP {e.code} - {body}")
     except urllib.error.URLError as e:
         print(f"Failed to send notification: {e}")
 
@@ -111,7 +123,7 @@ def main() -> None:
         except Exception as e:
             print(f"Error fetching {name} ({url}): {e}")
             # Keep previous known state if fetch fails, don't wipe it out
-            new_state[name] = state.get(name, {}).get("in_stock", False)
+            new_state[name] = state.get(name, {"in_stock": False, "checked_at": 0})
             continue
 
         in_stock = is_in_stock(html)

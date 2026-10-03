@@ -1,57 +1,72 @@
 # Marukyu Koyamaen Matcha Restock Watcher
 
-Watches all 11 "Principal matcha" products and pushes an urgent phone
-notification the moment any of them come back in stock.
+Watches the 11 "Principal matcha" products on Marukyu Koyamaen and sends a phone notification the moment any of them comes back in stock.
 
-Checks every 5 minutes, runs for free on GitHub, works even when your
-computer is off.
+It checks every 5 minutes, runs for free on GitHub Actions, and keeps working when your computer is off.
 
-## Setup (~5 minutes)
+Anyone is welcome to fork this and use it for themselves.
+
+## How it works
+
+1. A scheduled GitHub Actions workflow runs `check_stock.py`.
+2. The script loads each product page and looks for the phrase the site shows when an item is sold out.
+3. It compares the result to `state.json`, which stores what was in or out of stock on the previous run.
+4. If a product flips from out of stock to in stock, it sends a push notification through [ntfy](https://ntfy.sh). You only get notified on a change, never on every run.
+5. The workflow saves the updated `state.json` back to the repo for the next run.
+
+## Setup (about 5 minutes)
 
 ### 1. Get the notification app
-- Install **ntfy** on your phone: [iOS](https://apps.apple.com/us/app/ntfy/id1625396347) / [Android](https://play.google.com/store/apps/details?id=io.heckel.ntfy)
-- Open the app, tap **+** to subscribe to a topic.
-- Pick a **random, hard-to-guess topic name** (e.g. `matcha-alerts-8f2k1x39`) —
-  anyone who knows this name can also see/send notifications to it, since
-  ntfy topics aren't private by default. Subscribe to that exact name.
 
-### 2. Create a GitHub repo
-- Go to [github.com/new](https://github.com/new), create a new **public or
-  private** repo (e.g. `matcha-watcher`).
-- Upload all the files from this folder (`check_stock.py`,
-  `state.json`, and the `.github/workflows/check-stock.yml` folder) —
-  easiest way is drag-and-drop on the GitHub "Add file → Upload files" page,
-  making sure the workflow file lands at `.github/workflows/check-stock.yml`.
+- Install **ntfy** on your phone: [iOS](https://apps.apple.com/us/app/ntfy/id1625396347) or [Android](https://play.google.com/store/apps/details?id=io.heckel.ntfy)
+- Open the app, tap **+**, and subscribe to a topic.
+- Pick a topic name nobody else would guess, for example `matcha-alerts-8f2k1x39`. ntfy topics are public to anyone who knows the name, so a simple name like `matcha` means strangers could read your alerts or send you fake ones.
 
-### 3. Add your ntfy topic as a secret
-- In your new repo: **Settings → Secrets and variables → Actions → New repository secret**
+### 2. Fork or create the repo
+
+- Click **Fork** on this repo, or create your own and upload `check_stock.py`, `state.json`, and the workflow file at `.github/workflows/check-stock.yml`.
+- On a fork, open the **Actions** tab and click the button to enable workflows. GitHub turns them off by default on forks.
+
+### 3. Add your topic as a secret
+
+- In your repo go to **Settings → Secrets and variables → Actions → New repository secret**
 - Name: `NTFY_TOPIC`
-- Value: the topic name you picked in step 1 (e.g. `matcha-alerts-8f2k1x39`)
+- Value: the topic name from step 1
 
-### 4. Turn it on
-- Go to the **Actions** tab of your repo → you should see "Check matcha stock".
-- Click into it and click **Run workflow** once to test it manually.
-- Check the run log — it should print each product's status
-  (`out of stock` for all of them right now, most likely).
-- After that, it runs automatically every 5 minutes via the schedule.
+### 4. Let the workflow save its state
 
-### 5. When it fires
-You'll get a push notification titled something like "🍵 Wako is back in
-stock!" with a tap-through link straight to the product page. Since you
-mentioned it sells out fast, it's worth:
-- Making sure you're already **registered and logged in** to
-  marukyu-koyamaen.co.jp ahead of time (the site requires an account to
-  buy — [register here](https://www.marukyu-koyamaen.co.jp/english/shop/account)).
-- Keeping your payment/shipping info saved in your account so checkout is fast.
+- Go to **Settings → Actions → General → Workflow permissions**
+- Choose **Read and write permissions** and save.
 
-## Notes / limitations
-- GitHub's free scheduled jobs aren't millisecond-precise — expect anywhere
-  from ~1–10 minutes of delay depending on GitHub's load, not guaranteed
-  exactly every 5 minutes.
-- If you want faster checks, you could self-host this script instead (e.g.
-  a Raspberry Pi or any always-on machine with cron every 1 minute) — the
-  same `check_stock.py` works standalone, just run
-  `NTFY_TOPIC=your-topic python3 check_stock.py` on a loop.
-- The script currently checks whether the *whole product page* has no sold
-  out marker — some products sell multiple sizes, and this triggers when
-  *any* size is buyable again.
+### 5. Turn it on
+
+- Open the **Actions** tab and select **Check matcha stock**.
+- Click **Run workflow** once to test it.
+- Open the run log. Each product should print its status, and most will say `out of stock` unless a restock just happened.
+- After that it runs on its own every 5 minutes.
+
+## When it fires
+
+You get a high priority notification titled something like "🍵 Wako is back in stock!" with a tap-through link to the product page. If several products restock at once, you get a single notification listing all of them.
+
+These items sell out fast, so before a restock happens:
+
+- Register and log in at marukyu-koyamaen.co.jp. The site requires an account to buy ([register here](https://www.marukyu-koyamaen.co.jp/english/shop/account)).
+- Save your payment and shipping info in your account so checkout takes seconds.
+
+## Customizing
+
+- **Products:** edit the `PRODUCTS` list in `check_stock.py`. Each entry is a name and a product page URL.
+- **Sold out phrase:** if the site ever changes its wording, update `OUT_OF_STOCK_MARKER`. If that phrase stops matching, every product will look in stock, so check this first when you get a burst of false alerts.
+- **Frequency:** change the `cron` line in the workflow file.
+
+## Notes and limitations
+
+- GitHub's free scheduled jobs are not precise. Expect a delay of roughly 1 to 10 minutes depending on GitHub's load.
+- For faster checks, run the script on an always on machine such as a Raspberry Pi: `NTFY_TOPIC=your-topic python3 check_stock.py` on a loop or a 1 minute cron.
+- The script treats a product page as in stock when the sold out phrase is missing. Some products come in multiple sizes, so it fires when any size becomes buyable.
+- Please keep the 1 second pause between requests so the shop's server is not hammered.
+
+## Troubleshooting
+
+If a run fails while reading `state.json`, replace the file contents with `{}`. The next run rebuilds it.
